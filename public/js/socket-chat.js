@@ -1,20 +1,23 @@
 var socket = io();
-const params = new URLSearchParams(window.location.search);
+
+var params = new URLSearchParams(window.location.search);
 
 if (!params.has("nombre") || !params.has("sala")) {
     window.location = "index.html";
     throw new Error("El nombre y sala son necesarios");
 }
 
-const usuario = {
+var usuario = {
     nombre: params.get("nombre"),
     sala: params.get("sala"),
 };
 
 socket.on("connect", function () {
     console.log("Conectado al servidor");
+
     socket.emit("entrarChat", usuario, function (resp) {
-        console.log("Usuarios conectados", resp);
+        // console.log('Usuarios conectados', resp);
+        renderizarUsuarios(resp); // resp --> al arreglo de usuarios socket-chat-jquery
     });
 });
 
@@ -23,29 +26,28 @@ socket.on("disconnect", function () {
     console.log("Perdimos conexión con el servidor");
 });
 
-// Enviar información del cliente a todos los usuario
-// socket.emit(
-//     "crearMensaje",
-//     {
-//         usuario: "Fernando",
-//         mensaje: "Hola Mundo",
-//     },
-//     function (resp) {
-//         console.log("respuesta server: ", resp);
-//     }
-// );
+// Enviar información
+// socket.emit('crearMensaje', {
+//     nombre: 'Fernando',
+//     mensaje: 'Hola Mundo'
+// }, function(resp) {
+//     console.log('respuesta server: ', resp);
+// });
 
 // Escuchar información
 socket.on("crearMensaje", function (mensaje) {
-    console.log("Servidor:", mensaje);
+    // console.log("Servidor:", mensaje);
+    renderizarMensajes(mensaje, false);
+    scrollBottom();
 });
-// Escuchar cuando un usuario entra o sale del chat
+
+// Escuchar cambios de usuarios
+// cuando un usuario entra o sale del chat
 socket.on("listaPersona", function (personas) {
-    console.log(personas);
+    renderizarUsuarios(personas);
 });
 
 // Mensajes privados
-//Escuchar del cliente un mensaje privado
 socket.on("mensajePrivado", function (mensaje) {
-    console.log("Mensaje Privado", mensaje);
+    console.log("Mensaje Privado:", mensaje);
 });
